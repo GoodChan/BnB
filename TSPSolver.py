@@ -121,17 +121,19 @@ class TSPSolver:
 		Q = [start_city]
 		self.start_loc = 0
 		self.bssf_update_counter = 0
+		self.created_nodes = 0
+		self.pruned_nodes = 0
 
 		while not Q == []:
 			curr_city = heapq.heappop(Q)
 			if bssf < curr_city:
-				pass
+				self.pruned_nodes = self.pruned_nodes + 1
 			else:
 				for i in range(len(curr_city.matrix[curr_city.loc])):
 					city = self.expand(curr_city, i)
+					self.created_nodes = self.created_nodes + 1
 					if city <= bssf and city.cost != float('inf'):
 						heapq.heappush(Q, city)
-						heapq.heapify(Q)
 						if len(city.path) == len(self.cities):
 							start_path = True
 							if city.matrix[city.loc][self.start_loc] == float('inf'):
@@ -139,6 +141,9 @@ class TSPSolver:
 							if start_path:
 								bssf = city
 								self.bssf_update_counter = self.bssf_update_counter + 1
+					else:
+						self.pruned_nodes = self.pruned_nodes + 1
+
 		solution_cities = []
 		for i in range(len(bssf.path)):
 			solution_cities.append(self.cities[bssf.path[i]])
@@ -150,13 +155,11 @@ class TSPSolver:
 		results['count'] = self.bssf_update_counter
 		results['soln'] = TSPSolution(solution_cities)
 		results['max'] = None
-		results['total'] = None
-		results['pruned'] = None
+		results['total'] = self.created_nodes
+		results['pruned'] = self.pruned_nodes
 		return results
 
 	def init_bsf(self, cities, matrix):
-		# TODO: implement
-		# set cost, matrix, loc,
 		city = My_City()
 		results = self.defaultRandomTour()
 		city.init([0], matrix, 0, cities[0], results['cost'])
@@ -174,7 +177,6 @@ class TSPSolver:
 					mini = copy.deepcopy(matrix[i][j])
 
 			if not has_zero:
-				# cause of the Nans
 				for j in range(len(matrix[0])):
 					if not matrix[i][j] == float('inf'):
 						matrix[i][j] = (matrix[i][j] - mini)

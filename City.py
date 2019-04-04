@@ -18,10 +18,7 @@ class My_City:
         self.city = city
         self.cost = cost
 
-
     def __lt__(self, city):
-        # if len(self.path) > len(city.path):
-        #     return self.cost
         return self.cost < city.cost
 
     def __le__(self, city):
